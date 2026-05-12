@@ -6,6 +6,14 @@ import Toast, { ToastMsg } from '@/components/Toast';
 import { Medicine } from '@/lib/types';
 import { GST_RATES } from '@/lib/constants';
 
+type InventoryForm = {
+  name: string;
+  category: string;
+  price: number;
+  stock: number;
+  gstRate: number;
+};
+
 const Field = ({
   label,
   children,
@@ -25,13 +33,23 @@ export default function InventoryPage() {
   const [search, setSearch] = useState('');
   const [toasts, setToasts] = useState<ToastMsg[]>([]);
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<InventoryForm>({
     name: '',
     category: '',
     price: 0,
     stock: 0,
     gstRate: 5,
   });
+
+  const handleFormFieldChange = <K extends keyof InventoryForm>(
+    field: K,
+    value: InventoryForm[K]
+  ) => {
+    setForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
 
   const [editId, setEditId] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -425,13 +443,16 @@ export default function InventoryPage() {
                 <Field label="Medicine Name *">
                   <input
                     className="input"
+                    type="text"
+                    name="name"
+                    autoComplete="off"
                     placeholder="e.g. Paracetamol 500mg"
                     value={form.name}
                     onChange={(e) =>
-                      setForm((p) => ({
-                        ...p,
-                        name: e.target.value,
-                      }))
+                      handleFormFieldChange(
+                        'name',
+                        e.currentTarget.value
+                      )
                     }
                   />
                 </Field>
@@ -440,14 +461,16 @@ export default function InventoryPage() {
               <Field label="Category">
                 <input
                   className="input"
+                  type="text"
+                  name="category"
+                  autoComplete="off"
                   placeholder="e.g. Analgesic"
                   value={form.category}
                   onChange={(e) =>
-                    setForm((p) => ({
-                      ...p,
-                      category:
-                        e.target.value,
-                    }))
+                    handleFormFieldChange(
+                      'category',
+                      e.currentTarget.value
+                    )
                   }
                 />
               </Field>
