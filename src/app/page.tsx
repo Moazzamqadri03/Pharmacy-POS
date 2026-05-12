@@ -2,153 +2,149 @@
 // src/app/page.tsx
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { DashboardStats } from '@/lib/types';
 
-export default function Dashboard() {
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [loading, setLoading] = useState(true);
+const SLIDES = [
+  {
+    id: 1,
+    emoji: '🏥',
+    title: 'Welcome to Peerzada Medicate Duroo',
+    subtitle: 'Your Trusted Pharmacy Partner',
+    description: 'Professional pharmacy management system designed for modern healthcare needs. License: Br-05-413/415, Sopore, District Baramulla, Kashmir. Serving community with excellence since day one.',
+    cta: { text: 'Explore Dashboard', href: '#dashboard' }
+  },
+  {
+    id: 2,
+    emoji: '🛒',
+    title: 'Fast & Accurate POS System',
+    subtitle: 'Streamline Your Billing Process',
+    description: 'Experience lightning-fast point-of-sale with real-time inventory tracking, automatic calculations, and professional receipt generation. Process transactions in seconds with our intuitive interface.',
+    cta: { text: 'Start Billing', href: '/pos' }
+  },
+  {
+    id: 3,
+    emoji: '💊',
+    title: 'Smart Inventory Management',
+    subtitle: 'Never Run Out of Stock',
+    description: 'Monitor medicine stock levels, get low-stock alerts, manage expiry dates, and maintain optimal inventory with our intelligent system. Keep track of every medicine with precision.',
+    cta: { text: 'Manage Inventory', href: '/inventory' }
+  },
+  {
+    id: 4,
+    emoji: '📊',
+    title: 'Comprehensive Sales Analytics',
+    subtitle: 'Make Data-Driven Decisions',
+    description: 'Track sales performance, analyze revenue trends, monitor profit margins, and generate detailed reports for better business insights. Understand your business better.',
+    cta: { text: 'View Analytics', href: '/sales' }
+  },
+  {
+    id: 5,
+    emoji: '📋',
+    title: 'Sales History & Records',
+    subtitle: 'Complete Transaction Tracking',
+    description: 'Access complete sales history with detailed transaction records, customer information, and payment methods. Generate comprehensive reports and audit trails for compliance.',
+    cta: { text: 'View History', href: '/sales' }
+  }
+];
+
+export default function HomePage() {
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
-    fetch('/api/dashboard')
-      .then(r => r.json())
-      .then(data => { setStats(data); setLoading(false); })
-      .catch(() => setLoading(false));
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % SLIDES.length);
+    }, 5000);
+    return () => clearInterval(timer);
   }, []);
 
-  const fmt = (n: number) =>
-    new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 2 }).format(n);
+  const goToSlide = (index: number) => {
+    setCurrentSlide(index);
+  };
 
   return (
-    <div className="dashboard-shell">
-      <div className="dashboard-hero card">
-        <div className="dashboard-hero-copy">
-          <div className="hero-badge">Live Pharmacy Pulse</div>
-          <h1>Welcome to Peerzada Medicate Duroo</h1>
-          <p>
-            Keep your pharmacy operations smooth with clear sales insights, low-stock alerts,
-            and the fastest access to billing, inventory, and sales history.
-          </p>
-          <div className="hero-chip-row">
-            <span className="badge badge-gold">License: Br-05-413/415</span>
-            <span className="badge badge-blue">Sopore, Baramulla</span>
-          </div>
-        </div>
-
-        <div className="hero-status-grid">
-          {[
-            { label: 'Total Medicines', value: stats?.totalMedicines ?? '--', unit: 'items', color: 'var(--accent2)' },
-            { label: "Today's Sales", value: stats?.totalSalesToday ?? '--', unit: 'bills', color: 'var(--accent)' },
-            { label: "Today's Revenue", value: stats ? fmt(stats.totalRevenueToday) : '--', unit: 'INR', color: 'var(--gold)' },
-            { label: 'Low Stock Alerts', value: stats?.lowStockCount ?? '--', unit: 'items', color: 'var(--warn)' },
-          ].map(({ label, value, unit, color }) => (
-            <div key={label} className="hero-stat">
-              <div className="hero-stat-label">{label}</div>
-              <div className="hero-stat-value" style={{ color }}>
-                {value}
-                <span className="hero-stat-unit">{unit}</span>
+    <div className="home-page">
+      {/* Hero Slideshow */}
+      <div className="hero-slideshow">
+        <div className="slideshow-container">
+          {SLIDES.map((slide, index) => (
+            <div key={slide.id} className={`slide ${index === currentSlide ? 'active' : ''}`}>
+              <div className="slide-content">
+                <div className="slide-image-container">
+                  <div className="slide-image-wrapper">
+                    <div className="slide-image">{slide.emoji}</div>
+                    <div className="slide-image-glow"></div>
+                  </div>
+                </div>
+                <div className="slide-text">
+                  <div className="slide-title">{slide.title}</div>
+                  <div className="slide-subtitle">{slide.subtitle}</div>
+                  <div className="slide-description">{slide.description}</div>
+                  <Link href={slide.cta.href} className="btn btn-primary btn-lg">
+                    {slide.cta.text}
+                  </Link>
+                </div>
               </div>
             </div>
           ))}
         </div>
+
+        {/* Slide Indicators */}
+        <div className="slide-indicators">
+          {SLIDES.map((_, index) => (
+            <button
+              key={index}
+              className={`indicator ${index === currentSlide ? 'active' : ''}`}
+              onClick={() => goToSlide(index)}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
+        </div>
       </div>
 
-      <section className="dashboard-section">
-        <div className="section-header">
-          <div>
-            <div className="section-label">Performance Overview</div>
-            <h2>Today’s insights at a glance</h2>
+      {/* Quick Access Section */}
+      <section className="quick-access-section">
+        <div className="container">
+          <div className="section-header">
+            <h2>Quick Access</h2>
+            <p>Jump straight into your pharmacy operations</p>
           </div>
-          <p className="section-copy">A snapshot of revenue, sales volume, inventory health, and alerts to keep every shift on track.</p>
-        </div>
 
-        <div className="metric-grid">
-          {loading ? (
-            [...Array(4)].map((_, i) => (
-              <div key={i} className="metric-card card" style={{ minHeight: 150, opacity: 0.4 }} />
-            ))
-          ) : (
-            [
-              { label: "Today's Sales",    val: stats?.totalSalesToday   ?? 0, unit: 'bills',    icon: '🧾', color: 'var(--accent)' },
-              { label: "Today's Revenue",  val: fmt(stats?.totalRevenueToday ?? 0), icon: '₹', color: 'var(--gold)' },
-              { label: 'Total Medicines',  val: stats?.totalMedicines    ?? 0, unit: 'items',    icon: '💊', color: 'var(--accent2)' },
-              { label: 'Low Stock Alerts', val: stats?.lowStockCount     ?? 0, unit: 'medicines',icon: '⚠️', color: 'var(--warn)' },
-            ].map(({ label, val, unit, icon, color }) => (
-              <div key={label} className="metric-card card">
-                <div className="metric-card-symbol" style={{ color }}>{icon}</div>
-                <div className="metric-card-value">{typeof val === 'number' ? val.toLocaleString('en-IN') : val}</div>
-                <div className="metric-card-unit">{unit}</div>
-                <div className="metric-card-label">{label}</div>
-                <div className="metric-card-glow" style={{ color }}>{icon}</div>
+          <div className="quick-access-grid">
+            <Link href="/pos" className="quick-access-card card card-pos">
+              <div className="card-visual">
+                <div className="card-icon">🛒</div>
+                <div className="card-icon-small">💳</div>
               </div>
-            ))
-          )}
-        </div>
-      </section>
+              <div className="card-content">
+                <h3>Point of Sale</h3>
+                <p>Create new sales and generate receipts instantly with our fast POS system</p>
+              </div>
+              <div className="card-arrow">→</div>
+            </Link>
 
-      <section className="dashboard-section">
-        <div className="section-header" style={{ alignItems: 'flex-end', gap: 18 }}>
-          <div>
-            <div className="section-label">Quick Actions</div>
-            <h2>Move fast with every transaction</h2>
+            <Link href="/inventory" className="quick-access-card card card-inventory">
+              <div className="card-visual">
+                <div className="card-icon">💊</div>
+                <div className="card-icon-small">📦</div>
+              </div>
+              <div className="card-content">
+                <h3>Inventory Management</h3>
+                <p>Add medicines, track stock, and manage inventory with precision</p>
+              </div>
+              <div className="card-arrow">→</div>
+            </Link>
+
+            <Link href="/sales" className="quick-access-card card card-sales">
+              <div className="card-visual">
+                <div className="card-icon">📋</div>
+                <div className="card-icon-small">📊</div>
+              </div>
+              <div className="card-content">
+                <h3>Sales History</h3>
+                <p>Review past transactions, generate reports, and track performance</p>
+              </div>
+              <div className="card-arrow">→</div>
+            </Link>
           </div>
-          <p className="section-copy">Jump straight into billing, inventory management, or review sales records.</p>
-        </div>
-
-        <div className="dashboard-actions">
-          <Link href="/login" className="btn btn-secondary">🔐 Sign In</Link>
-          <Link href="/pos" className="btn btn-primary btn-lg">🛒 New Sale</Link>
-          <Link href="/inventory" className="btn btn-gold">+ Add Medicine</Link>
-          <Link href="/sales" className="btn btn-ghost">📋 View Sales History</Link>
-        </div>
-      </section>
-
-      <section className="dashboard-section">
-        <div className="section-header">
-          <div>
-            <div className="section-label">Recent Transactions</div>
-            <h2>Latest invoices and customer activity</h2>
-          </div>
-          <p className="section-copy">Review your most recent sales, invoice totals, and service timestamps from the current day.</p>
-        </div>
-
-        <div className="card table-card">
-          <table>
-            <thead>
-              <tr>
-                {['Invoice', 'Patient', 'Amount', 'Date/Time'].map(h => (
-                  <th key={h}>{h}</th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {loading
-                ? [...Array(5)].map((_, i) => (
-                    <tr key={i}>
-                      {[...Array(4)].map((_, j) => (
-                        <td key={j}>
-                          <div className="loading-bar" style={{ width: j === 0 ? 90 : j === 2 ? 70 : 120 }} />
-                        </td>
-                      ))}
-                    </tr>
-                  ))
-                    : stats?.recentSales?.length
-                ? stats.recentSales.map(sale => (
-                    <tr key={sale.id}>
-                      <td className="mono text-accent">{sale.invoiceNo}</td>
-                      <td>{sale.customerName || <span className="text-muted">—</span>}</td>
-                      <td className="mono" style={{ fontWeight: 700 }}>{fmt(sale.grandTotal)}</td>
-                      <td className="text-subtle">{new Date(sale.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}</td>
-                    </tr>
-                  ))
-                : (
-                  <tr>
-                    <td colSpan={4} className="empty-state">
-                      No sales recorded yet. <Link href="/pos" className="text-accent">Start your first sale →</Link>
-                    </td>
-                  </tr>
-                )}
-            </tbody>
-          </table>
         </div>
       </section>
     </div>
