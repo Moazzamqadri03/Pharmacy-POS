@@ -1,13 +1,12 @@
 'use client';
 // src/app/inventory/page.tsx
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Toast, { ToastMsg } from '@/components/Toast';
 import { Medicine } from '@/lib/types';
 import { GST_RATES } from '@/lib/constants';
 
 const EMPTY: Omit<Medicine,'id'|'createdAt'|'updatedAt'> = { name:'', category:'', price:0, stock:0, gstRate:5 };
 
-// FIXED: Moved outside the component
 const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
   <div><label className="field-label">{label}</label>{children}</div>
 );
@@ -21,6 +20,7 @@ export default function InventoryPage() {
   const [editId, setEditId] = useState<number|null>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const nameRef = useRef<HTMLInputElement>(null);
 
   const toast = (text: string, type: ToastMsg['type'] = 'success') =>
     setToasts(p => [...p, { id: Date.now(), text, type }]);
@@ -35,6 +35,10 @@ export default function InventoryPage() {
     const q = search.toLowerCase();
     setFiltered(medicines.filter(m => m.name.toLowerCase().includes(q) || m.category.toLowerCase().includes(q)));
   }, [search, medicines]);
+
+  useEffect(() => {
+    if (showForm) setTimeout(() => nameRef.current?.focus(), 50);
+  }, [showForm]);
 
   const openAdd = () => { setForm(EMPTY); setEditId(null); setShowForm(true); };
   const openEdit = (m: Medicine) => { setForm({ name:m.name, category:m.category, price:m.price, stock:m.stock, gstRate:m.gstRate }); setEditId(m.id); setShowForm(true); };
@@ -60,6 +64,27 @@ export default function InventoryPage() {
       await fetch(`/api/medicines/${id}`, { method: 'DELETE' });
       toast('✔ Deleted'); load();
     } catch { toast('✖ Delete failed', 'error'); }
+  };
+
+  const handleName = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setForm(p => ({...p, name: val}));
+  };
+  const handleCategory = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setForm(p => ({...p, category: val}));
+  };
+  const handlePrice = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setForm(p => ({...p, price: parseFloat(val)}));
+  };
+  const handleStock = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    setForm(p => ({...p, stock: parseInt(val)}));
+  };
+  const handleGst = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const val = e.target.value;
+    setForm(p => ({...p, gstRate: parseInt(val)}));
   };
 
   return (
@@ -120,20 +145,46 @@ export default function InventoryPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               <div style={{ gridColumn: '1/-1' }}>
                 <Field label="Medicine Name *">
-                  <input className="input" placeholder="e.g. Paracetamol 500mg" value={form.name} onChange={e => setForm(p => ({...p, name: e.target.value}))} />
+                  <input
+                    ref={nameRef}
+                    className="input"
+                    placeholder="e.g. Paracetamol 500mg"
+                    value={form.name}
+                    onChange={handleName}
+                  />
                 </Field>
               </div>
               <Field label="Category">
-                <input className="input" placeholder="e.g. Analgesic" value={form.category} onChange={e => setForm(p => ({...p, category: e.target.value}))} />
+                <input
+                  className="input"
+                  placeholder="e.g. Analgesic"
+                  value={form.category}
+                  onChange={handleCategory}
+                />
               </Field>
               <Field label="MRP (₹) *">
-                <input className="input" type="number" min={0} step={0.01} placeholder="0.00" value={form.price || ''} onChange={e => setForm(p => ({...p, price: parseFloat(e.target.value)}))} />
+                <input
+                  className="input"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  placeholder="0.00"
+                  value={form.price || ''}
+                  onChange={handlePrice}
+                />
               </Field>
               <Field label="Stock (units) *">
-                <input className="input" type="number" min={0} placeholder="0" value={form.stock || ''} onChange={e => setForm(p => ({...p, stock: parseInt(e.target.value)}))} />
+                <input
+                  className="input"
+                  type="number"
+                  min={0}
+                  placeholder="0"
+                  value={form.stock || ''}
+                  onChange={handleStock}
+                />
               </Field>
               <Field label="GST Rate">
-                <select className="select" value={form.gstRate} onChange={e => setForm(p => ({...p, gstRate: parseInt(e.target.value)}))}>
+                <select className="select" value={form.gstRate} onChange={handleGst}>
                   {GST_RATES.map(r => <option key={r} value={r}>{r}%</option>)}
                 </select>
               </Field>
