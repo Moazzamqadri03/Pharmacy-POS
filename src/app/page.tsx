@@ -95,6 +95,7 @@ export default function Dashboard() {
         </div>
 
         <div className="dashboard-actions">
+          <Link href="/login" className="btn btn-secondary">🔐 Sign In</Link>
           <Link href="/pos" className="btn btn-primary btn-lg">🛒 New Sale</Link>
           <Link href="/inventory" className="btn btn-gold">+ Add Medicine</Link>
           <Link href="/sales" className="btn btn-ghost">📋 View Sales History</Link>

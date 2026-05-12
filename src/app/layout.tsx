@@ -13,13 +13,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <Navbar />
-        <main style={{ paddingTop: '64px', minHeight: 'calc(100vh - 64px)' }}>
+        <main className="app-shell">
           {children}
         </main>
-      <footer style={{textAlign: 'center', padding: '10px', opacity: 0.5, fontSize: '12px'}}>
-  © 2026 Moazzam Hussain Qadri. All rights reserved.
-</footer>
-</body>
+        <footer className="app-footer">© 2026 Moazzam Hussain Qadri. All rights reserved.</footer>
+      </body>
     </html>
   );
 }

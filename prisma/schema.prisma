@@ -50,3 +50,40 @@ model SaleItem {
   sale     Sale     @relation(fields: [saleId], references: [id])
   medicine Medicine @relation(fields: [medicineId], references: [id])
 }
+
+model User {
+  id           Int          @id @default(autoincrement())
+  name         String?
+  email        String?      @unique
+  phone        String?      @unique
+  passwordHash String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  otpRequests  OtpRequest[]
+  sessions     Session[]
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model OtpRequest {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  method     String
+  identifier String
+  purpose    String
+  code       String
+  expiresAt  DateTime
+  used       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  @@index([identifier, purpose, code])
+}
