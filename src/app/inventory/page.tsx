@@ -1,7 +1,7 @@
 'use client';
 // src/app/inventory/page.tsx
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Toast, { ToastMsg } from '@/components/Toast';
 import { Medicine } from '@/lib/types';
 import { GST_RATES } from '@/lib/constants';
@@ -36,8 +36,6 @@ export default function InventoryPage() {
   const [editId, setEditId] = useState<number | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
-
-  const nameRef = useRef<HTMLInputElement>(null);
 
   const toast = (
     text: string,
@@ -76,14 +74,6 @@ export default function InventoryPage() {
       )
     );
   }, [search, medicines]);
-
-  useEffect(() => {
-    if (showForm) {
-      setTimeout(() => {
-        nameRef.current?.focus();
-      }, 100);
-    }
-  }, [showForm]);
 
   const openAdd = () => {
     setForm({
@@ -129,10 +119,10 @@ export default function InventoryPage() {
         ? `/api/medicines/${editId}`
         : '/api/medicines';
 
-      const meth = editId ? 'PUT' : 'POST';
+      const method = editId ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
-        method: meth,
+        method,
         headers: {
           'Content-Type': 'application/json',
         },
@@ -161,8 +151,9 @@ export default function InventoryPage() {
       !confirm(
         `Delete "${name}"? This cannot be undone.`
       )
-    )
+    ) {
       return;
+    }
 
     try {
       await fetch(`/api/medicines/${id}`, {
@@ -411,9 +402,6 @@ export default function InventoryPage() {
               width: 480,
               padding: 28,
             }}
-            onClick={(e) =>
-              e.stopPropagation()
-            }
           >
             <h2 style={{ marginBottom: 20 }}>
               {editId
@@ -436,7 +424,6 @@ export default function InventoryPage() {
               >
                 <Field label="Medicine Name *">
                   <input
-                    ref={nameRef}
                     className="input"
                     placeholder="e.g. Paracetamol 500mg"
                     value={form.name}
@@ -550,22 +537,11 @@ export default function InventoryPage() {
                 onClick={save}
                 disabled={saving}
               >
-                {saving ? (
-                  <>
-                    <span
-                      className="spinner"
-                      style={{
-                        width: 14,
-                        height: 14,
-                      }}
-                    />
-                    {' '}Saving…
-                  </>
-                ) : editId ? (
-                  'Update Medicine'
-                ) : (
-                  'Add Medicine'
-                )}
+                {saving
+                  ? 'Saving...'
+                  : editId
+                  ? 'Update Medicine'
+                  : 'Add Medicine'}
               </button>
             </div>
           </div>
