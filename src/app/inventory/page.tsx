@@ -7,6 +7,11 @@ import { GST_RATES } from '@/lib/constants';
 
 const EMPTY: Omit<Medicine,'id'|'createdAt'|'updatedAt'> = { name:'', category:'', price:0, stock:0, gstRate:5 };
 
+// FIXED: Moved outside the component
+const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
+  <div><label className="field-label">{label}</label>{children}</div>
+);
+
 export default function InventoryPage() {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [filtered, setFiltered] = useState<Medicine[]>([]);
@@ -57,13 +62,8 @@ export default function InventoryPage() {
     } catch { toast('✖ Delete failed', 'error'); }
   };
 
-  const Field = ({ label, children }: { label: string; children: React.ReactNode }) => (
-    <div><label className="field-label">{label}</label>{children}</div>
-  );
-
   return (
     <div style={{ padding: '28px', maxWidth: 1200, margin: '0 auto' }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
         <div>
           <h1>Inventory</h1>
@@ -72,10 +72,8 @@ export default function InventoryPage() {
         <button className="btn btn-primary" onClick={openAdd}>+ Add Medicine</button>
       </div>
 
-      {/* Search */}
       <input className="input" style={{ maxWidth: 400, marginBottom: 20 }} placeholder="Search by name or category…" value={search} onChange={e => setSearch(e.target.value)} />
 
-      {/* Table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
@@ -115,7 +113,6 @@ export default function InventoryPage() {
         </table>
       </div>
 
-      {/* Add/Edit Modal */}
       {showForm && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', zIndex: 200, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <div className="card" style={{ width: 480, padding: 28 }}>
