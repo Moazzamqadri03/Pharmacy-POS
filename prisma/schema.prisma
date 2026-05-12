@@ -1,0 +1,52 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Medicine {
+  id        Int      @id @default(autoincrement())
+  name      String
+  category  String
+  price     Float
+  stock     Int      @default(0)
+  gstRate   Float    @default(5)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  saleItems SaleItem[]
+}
+
+model Sale {
+  id          Int      @id @default(autoincrement())
+  invoiceNo   String   @unique
+  customerName String?
+  customerPhone String?
+  doctorName  String?
+  discount    Float    @default(0)
+  subtotal    Float
+  cgst        Float
+  sgst        Float
+  grandTotal  Float
+  createdAt   DateTime @default(now())
+
+  items SaleItem[]
+}
+
+model SaleItem {
+  id         Int      @id @default(autoincrement())
+  saleId     Int
+  medicineId Int
+  medicineName String
+  qty        Int
+  unitPrice  Float
+  gstRate    Float
+  lineTotal  Float
+
+  sale     Sale     @relation(fields: [saleId], references: [id])
+  medicine Medicine @relation(fields: [medicineId], references: [id])
+}
