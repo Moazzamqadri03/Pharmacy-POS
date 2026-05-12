@@ -7,20 +7,18 @@ export async function GET() {
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
-    const [salesToday, allMedicines, lowStock, recentSales, revenueToday] = await Promise.all([
-      prisma.sale.count({ where: { createdAt: { gte: todayStart } } }),
-      prisma.medicine.count(),
-      prisma.medicine.count({ where: { stock: { lte: 10 } } }),
-      prisma.sale.findMany({
-        take: 8,
-        orderBy: { createdAt: 'desc' },
-        select: { id: true, invoiceNo: true, customerName: true, grandTotal: true, createdAt: true },
-      }),
-      prisma.sale.aggregate({
-        where: { createdAt: { gte: todayStart } },
-        _sum: { grandTotal: true },
-      }),
-    ]);
+    const salesToday = await prisma.sale.count({ where: { createdAt: { gte: todayStart } } });
+    const allMedicines = await prisma.medicine.count();
+    const lowStock = await prisma.medicine.count({ where: { stock: { lte: 10 } } });
+    const recentSales = await prisma.sale.findMany({
+      take: 8,
+      orderBy: { createdAt: 'desc' },
+      select: { id: true, invoiceNo: true, customerName: true, grandTotal: true, createdAt: true },
+    });
+    const revenueToday = await prisma.sale.aggregate({
+      where: { createdAt: { gte: todayStart } },
+      _sum: { grandTotal: true },
+    });
 
     return NextResponse.json({
       totalSalesToday: salesToday,
@@ -31,6 +29,13 @@ export async function GET() {
     });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: 'Failed to load dashboard' }, { status: 500 });
+    return NextResponse.json({
+      totalSalesToday: 0,
+      totalRevenueToday: 0,
+      totalMedicines: 0,
+      lowStockCount: 0,
+      recentSales: [],
+      error: 'Failed to load dashboard',
+    }, { status: 500 });
   }
 }
