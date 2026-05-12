@@ -17,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
       <footer style={{textAlign: 'center', padding: '10px', opacity: 0.5, fontSize: '12px'}}>
-  © 2025 Moazzam Qadri. All rights reserved.
+  © 2026 Moazzam Hussain Qadri. All rights reserved.
 </footer>
 </body>
     </html>
