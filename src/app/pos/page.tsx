@@ -1,6 +1,6 @@
 'use client';
 // src/app/pos/page.tsx
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import Receipt from '@/components/Receipt';
 import Toast, { ToastMsg } from '@/components/Toast';
@@ -48,7 +48,6 @@ export default function POSPage() {
     setFiltered(medicines.filter(m => m.name.toLowerCase().includes(q) || m.category.toLowerCase().includes(q)));
   }, [search, medicines]);
 
-  // ── cart ──
   const addToCart = (med: Medicine) => {
     if (med.stock <= 0) { toast('⚠ Out of stock', 'error'); return; }
     setCart(prev => {
@@ -63,24 +62,19 @@ export default function POSPage() {
   };
 
   const changeQty = (id: number, delta: number) => {
-    setCart(prev => {
-      const updated = prev.map(c => c.id === id ? { ...c, qty: c.qty + delta } : c).filter(c => c.qty > 0);
-      return updated;
-    });
+    setCart(prev => prev.map(c => c.id === id ? { ...c, qty: c.qty + delta } : c).filter(c => c.qty > 0));
   };
 
   const removeFromCart = (id: number) => setCart(p => p.filter(c => c.id !== id));
 
-  // ── totals ──
   const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
-  const discAmt  = subtotal * discount / 100;
+  const discAmt = subtotal * discount / 100;
   const afterDisc = subtotal - discAmt;
   let totalGst = 0;
   cart.forEach(i => { totalGst += (i.price * i.qty * (1 - discount / 100)) * i.gstRate / (100 + i.gstRate); });
   const cgst = totalGst / 2, sgst = totalGst / 2;
   const grandTotal = afterDisc;
 
-  // ── save + print ──
   const handlePrint = async () => {
     if (!cart.length) { toast('⚠ Cart is empty', 'error'); return; }
     setSaving(true);
@@ -99,7 +93,6 @@ export default function POSPage() {
       setReceiptDate(new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }));
       setShowReceipt(true);
       toast('✔ Sale saved successfully');
-      // Refresh stock
       const updated = await fetch('/api/medicines').then(r => r.json());
       setMedicines(updated);
       setFiltered(updated.filter((m: Medicine) => m.name.toLowerCase().includes(search.toLowerCase()) || m.category.toLowerCase().includes(search.toLowerCase())));
@@ -120,10 +113,8 @@ export default function POSPage() {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', height: 'calc(100vh - 64px)', overflow: 'hidden' }}>
 
-      {/* ── LEFT: INVENTORY ── */}
+      {/* LEFT: INVENTORY */}
       <div style={{ display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--border)', overflow: 'hidden' }}>
-
-        {/* Search bar */}
         <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', background: 'rgba(255,255,255,0.01)' }}>
           <input
             className="input"
@@ -133,8 +124,6 @@ export default function POSPage() {
             style={{ maxWidth: '100%' }}
           />
         </div>
-
-        {/* Drug grid */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px 20px' }}>
           <div className="section-label">Medicines — {filtered.length} items</div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(190px,1fr))', gap: 10 }}>
@@ -148,7 +137,6 @@ export default function POSPage() {
                 }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--accent)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(0,200,150,0.08)'; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = med.stock <= 10 ? 'rgba(239,68,68,0.35)' : 'var(--border)'; (e.currentTarget as HTMLElement).style.transform = ''; (e.currentTarget as HTMLElement).style.boxShadow = ''; }}>
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, background: 'linear-gradient(90deg,var(--accent),var(--accent2))', opacity: 0, transition: 'opacity 0.18s' }} className="top-bar" />
                 <div style={{ fontSize: 13, fontWeight: 600, lineHeight: 1.3, marginBottom: 3 }}>{med.name}</div>
                 <div style={{ fontSize: 11, color: 'var(--muted)', fontFamily: 'var(--mono)' }}>{med.category}</div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: 'var(--accent)', fontFamily: 'var(--mono)', marginTop: 6 }}>{fmt(med.price)}</div>
@@ -162,27 +150,45 @@ export default function POSPage() {
         </div>
       </div>
 
-      {/* ── RIGHT: CART ── */}
+      {/* RIGHT: CART */}
       <div style={{ display: 'flex', flexDirection: 'column', background: 'var(--navy)', overflow: 'hidden' }}>
-
-        {/* Cart header */}
         <div style={{ padding: '14px 20px 12px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <h2 style={{ fontSize: 18, fontFamily: 'var(--serif)' }}>Current Sale</h2>
           <span className="badge badge-green">{cart.length} item{cart.length !== 1 ? 's' : ''}</span>
         </div>
 
-        {/* Customer */}
+        {/* Customer fields - FIXED */}
         <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--border)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-          {[
-            { label: 'Patient Name',     val: custName,    set: setCustName,   ph: 'Optional' },
-            { label: 'Phone No.',        val: custPhone,   set: setCustPhone,  ph: 'Optional' },
-            { label: 'Doctor / Rx',      val: doctorName,  set: setDoctorName, ph: 'Dr. name or Rx No.' },
-          ].map(({ label, val, set, ph }) => (
-            <div key={label}>
-              <label className="field-label">{label}</label>
-              <input className="input" style={{ padding: '7px 10px', fontSize: 13 }} placeholder={ph} value={val} onChange={e => set(e.target.value)} />
-            </div>
-          ))}
+          <div>
+            <label className="field-label">Patient Name</label>
+            <input
+              className="input"
+              style={{ padding: '7px 10px', fontSize: 13 }}
+              placeholder="Optional"
+              value={custName}
+              onChange={e => setCustName(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="field-label">Phone No.</label>
+            <input
+              className="input"
+              style={{ padding: '7px 10px', fontSize: 13 }}
+              placeholder="Optional"
+              value={custPhone}
+              onChange={e => setCustPhone(e.target.value)}
+            />
+          </div>
+          <div>
+            <label className="field-label">Doctor / Rx</label>
+            <input
+              className="input"
+              style={{ padding: '7px 10px', fontSize: 13 }}
+              placeholder="Dr. name or Rx No."
+              value={doctorName}
+              onChange={e => setDoctorName(e.target.value)}
+            />
+          </div>
           <div>
             <label className="field-label">Invoice No.</label>
             <input className="input mono text-accent" style={{ padding: '7px 10px', fontSize: 13 }} value={invoiceNo} readOnly />
@@ -207,7 +213,7 @@ export default function POSPage() {
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                  {['−','qty','+','✕'].map((ctrl, ci) => (
+                  {(['−', 'qty', '+', '✕'] as const).map((ctrl) => (
                     ctrl === 'qty'
                       ? <span key="qty" style={{ fontFamily: 'var(--mono)', fontSize: 13, fontWeight: 700, minWidth: 22, textAlign: 'center' }}>{item.qty}</span>
                       : <button key={ctrl} onClick={() => ctrl === '✕' ? removeFromCart(item.id) : changeQty(item.id, ctrl === '+' ? 1 : -1)}
@@ -261,7 +267,7 @@ export default function POSPage() {
         </div>
       </div>
 
-      {/* ── RECEIPT MODAL ── */}
+      {/* RECEIPT MODAL */}
       {showReceipt && (
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(6px)',

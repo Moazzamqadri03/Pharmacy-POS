@@ -33,3 +33,5 @@ next-env.d.ts
 # prisma generated
 prisma/generated/
 dev.db
+
+.vercel
