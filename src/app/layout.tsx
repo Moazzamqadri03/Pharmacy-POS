@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main className="app-shell">
           {children}
         </main>
-        <footer className="app-footer">© 2026 Moazzam Hussain Qadri. All rights reserved.</footer>
+        <footer className="app-footer">© 2026 Moazzam Hussain Qadri.. All rights reserved.</footer>
       </body>
     </html>
   );
