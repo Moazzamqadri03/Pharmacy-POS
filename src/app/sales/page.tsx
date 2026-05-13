@@ -1,6 +1,7 @@
 'use client';
 // src/app/sales/page.tsx
 import { useEffect, useState } from 'react';
+import { apiCall } from '@/lib/constants';
 
 interface SaleItem { medicineName: string; qty: number; unitPrice: number; lineTotal: number; gstRate: number; }
 interface Sale { id: number; invoiceNo: string; customerName: string|null; customerPhone: string|null; doctorName: string|null; discount: number; subtotal: number; cgst: number; sgst: number; grandTotal: number; createdAt: string; items: SaleItem[]; }
@@ -11,7 +12,7 @@ export default function SalesPage() {
   const [expanded, setExpanded] = useState<number|null>(null);
 
   useEffect(() => {
-    fetch('/api/sales').then(r => r.json()).then(d => { setSales(d); setLoading(false); });
+    apiCall('/api/sales').then(r => r.json()).then(d => { setSales(d); setLoading(false); }).catch(e => { console.error('Failed to load sales:', e); setLoading(false); });
   }, []);
 
   const fmt = (n: number) => '₹' + n.toFixed(2);

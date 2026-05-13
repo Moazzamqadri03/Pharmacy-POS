@@ -15,6 +15,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         price: Number(body.price),
         stock: Number(body.stock),
         gstRate: Number(body.gstRate),
+        purchasePrice: body.purchasePrice ? Number(body.purchasePrice) : null,
+        unitsPurchased: body.unitsPurchased ? Number(body.unitsPurchased) : null,
       },
     });
 

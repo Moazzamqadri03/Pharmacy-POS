@@ -11,8 +11,8 @@ export async function GET(req: NextRequest) {
       where: q
         ? {
             OR: [
-              { name: { contains: q,  } },
-              { category: { contains: q,  } },
+              { name: { contains: q } },
+              { category: { contains: q } },
             ],
           }
         : undefined,
@@ -22,21 +22,29 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(medicines);
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: 'Failed to fetch medicines' }, { status: 500 });
+    return NextResponse.json([], { status: 200 });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { name, category, price, stock, gstRate } = body;
+    const { name, category, price, stock, gstRate, purchasePrice, unitsPurchased } = body;
 
     if (!name || price == null || stock == null) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     const medicine = await prisma.medicine.create({
-      data: { name, category: category || 'General', price: Number(price), stock: Number(stock), gstRate: Number(gstRate ?? 5) },
+      data: {
+        name,
+        category: category || 'General',
+        price: Number(price),
+        stock: Number(stock),
+        gstRate: Number(gstRate ?? 5),
+        purchasePrice: purchasePrice ? Number(purchasePrice) : null,
+        unitsPurchased: unitsPurchased ? Number(unitsPurchased) : null
+      },
     });
 
     return NextResponse.json(medicine, { status: 201 });

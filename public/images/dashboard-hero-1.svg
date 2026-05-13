@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 520" role="img" aria-labelledby="title1">
+  <title id="title1">Pharmacy analytics illustration</title>
+  <defs>
+    <linearGradient id="grad1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#10b981" />
+    </linearGradient>
+    <linearGradient id="grad2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f59e0b" />
+      <stop offset="100%" stop-color="#e11d48" />
+    </linearGradient>
+  </defs>
+  <rect x="24" y="24" width="592" height="472" rx="56" fill="#111827"/>
+  <circle cx="180" cy="170" r="90" fill="url(#grad1)" opacity="0.95" />
+  <path d="M156 122h48v96h-48z" fill="#fff" opacity="0.9" />
+  <path d="M132 148h96v48h-96z" fill="#fff" opacity="0.9" />
+  <rect x="350" y="122" width="208" height="176" rx="36" fill="url(#grad2)" opacity="0.9" />
+  <rect x="378" y="156" width="60" height="64" rx="14" fill="#fff" />
+  <rect x="454" y="156" width="60" height="40" rx="12" fill="#fff" />
+  <rect x="454" y="216" width="60" height="40" rx="12" fill="#fff" />
+  <circle cx="180" cy="380" r="68" fill="#e0f2fe" opacity="0.85" />
+  <path d="M168 342c-22 12-34 33-34 56 0 40 32 72 72 72s72-32 72-72-32-72-72-72c-13 0-26 3-38 8" fill="#fff" opacity="0.9" />
+  <circle cx="418" cy="392" r="34" fill="#fff" />
+  <path d="M402 392h32" stroke="#0f172a" stroke-width="12" stroke-linecap="round" />
+  <path d="M418 376v32" stroke="#0f172a" stroke-width="12" stroke-linecap="round" />
+</svg>

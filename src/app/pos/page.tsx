@@ -5,6 +5,7 @@ import { useReactToPrint } from 'react-to-print';
 import Receipt from '@/components/Receipt';
 import Toast, { ToastMsg } from '@/components/Toast';
 import { CartItem, Medicine } from '@/lib/types';
+import { apiCall } from '@/lib/constants';
 
 let _inv = 1000;
 function nextInv() {
@@ -38,14 +39,30 @@ export default function POSPage() {
   const toast = (text: string, type: ToastMsg['type'] = 'success') =>
     setToasts(p => [...p, { id: Date.now(), text, type }]);
 
+  const safeArray = <T,>(value: unknown): T[] =>
+    Array.isArray(value) ? value : [];
+
   useEffect(() => {
     setInvoiceNo(nextInv());
-    fetch('/api/medicines').then(r => r.json()).then(data => { setMedicines(data); setFiltered(data); });
+    apiCall('/api/medicines')
+      .then((r) => r.json())
+      .then((data) => {
+        const list = safeArray<Medicine>(data);
+        setMedicines(list);
+        setFiltered(list);
+      })
+      .catch((error) => {
+        console.error('Failed to load medicines:', error);
+        toast('⚠ Failed to load medicines. Check connection.', 'error');
+        setMedicines([]);
+        setFiltered([]);
+      });
   }, []);
 
   useEffect(() => {
     const q = search.toLowerCase();
-    setFiltered(medicines.filter(m => m.name.toLowerCase().includes(q) || m.category.toLowerCase().includes(q)));
+    const list = safeArray<Medicine>(medicines);
+    setFiltered(list.filter((m) => m.name.toLowerCase().includes(q) || m.category.toLowerCase().includes(q)));
   }, [search, medicines]);
 
   const addToCart = (med: Medicine) => {
@@ -77,6 +94,7 @@ export default function POSPage() {
 
   const handlePrint = async () => {
     if (!cart.length) { toast('⚠ Cart is empty', 'error'); return; }
+    if (!custName.trim()) { toast('⚠ Patient name is required', 'error'); return; }
     setSaving(true);
     try {
       const payload = {
@@ -88,16 +106,18 @@ export default function POSPage() {
           lineTotal: i.price * i.qty * (1 - discount / 100),
         })),
       };
-      const res = await fetch('/api/sales', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      const res = await apiCall('/api/sales', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!res.ok) throw new Error('Save failed');
       setReceiptDate(new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }));
       setShowReceipt(true);
       toast('✔ Sale saved successfully');
-      const updated = await fetch('/api/medicines').then(r => r.json());
-      setMedicines(updated);
-      setFiltered(updated.filter((m: Medicine) => m.name.toLowerCase().includes(search.toLowerCase()) || m.category.toLowerCase().includes(search.toLowerCase())));
+      const updated = await apiCall('/api/medicines').then((r) => r.json());
+      const updatedList = safeArray<Medicine>(updated);
+      setMedicines(updatedList);
+      setFiltered(updatedList.filter((m) => m.name.toLowerCase().includes(search.toLowerCase()) || m.category.toLowerCase().includes(search.toLowerCase())));
     } catch (e) {
-      toast('✖ Failed to save sale', 'error');
+      console.error('Sale error:', e);
+      toast('✖ Failed to save sale. Check connection and try again.', 'error');
     } finally {
       setSaving(false);
     }
@@ -160,13 +180,14 @@ export default function POSPage() {
         {/* Customer fields - FIXED */}
         <div style={{ padding: '12px 20px', borderBottom: '1px solid var(--border)', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
           <div>
-            <label className="field-label">Patient Name</label>
+            <label className="field-label">Patient Name *</label>
             <input
               className="input"
               style={{ padding: '7px 10px', fontSize: 13 }}
-              placeholder="Optional"
+              placeholder="Enter patient name"
               value={custName}
               onChange={e => setCustName(e.target.value)}
+              required
             />
           </div>
           <div>
@@ -279,10 +300,10 @@ export default function POSPage() {
               cart={cart} discount={discount} subtotal={subtotal} cgst={cgst} sgst={sgst} grandTotal={grandTotal}
               date={receiptDate} gstin={process.env.NEXT_PUBLIC_GSTIN || '01XXXXX0000X1ZX'} />
           </div>
-          <div style={{ display: 'flex', gap: 12 }}>
-            <button className="btn btn-primary" onClick={printFn}>🖨 Print</button>
+          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <button className="btn btn-primary" onClick={() => { if (printFn) printFn(); }} title="Print receipt">🖨 Print Receipt</button>
+            <button className="btn btn-gold" onClick={newSale} title="Start new sale">+ New Sale</button>
             <button className="btn btn-secondary" onClick={() => setShowReceipt(false)}>✕ Close</button>
-            <button className="btn btn-gold" onClick={newSale}>+ New Sale</button>
           </div>
         </div>
       )}

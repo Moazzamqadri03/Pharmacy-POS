@@ -6,6 +6,9 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL")
+  shadowDatabaseUrl = env("DATABASE_URL")
+  relationMode = "prisma"
 }
 
 model Medicine {
@@ -15,6 +18,8 @@ model Medicine {
   price     Float
   stock     Int      @default(0)
   gstRate   Float    @default(5)
+  purchasePrice Float?
+  unitsPurchased Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import Toast, { ToastMsg } from '@/components/Toast';
 import { Medicine } from '@/lib/types';
-import { GST_RATES } from '@/lib/constants';
+import { GST_RATES, apiCall } from '@/lib/constants';
 
 type InventoryForm = {
   name: string;
@@ -12,6 +12,8 @@ type InventoryForm = {
   price: number;
   stock: number;
   gstRate: number;
+  purchasePrice: number;
+  unitsPurchased: number;
 };
 
 const Field = ({
@@ -39,6 +41,8 @@ export default function InventoryPage() {
     price: 0,
     stock: 0,
     gstRate: 5,
+    purchasePrice: 0,
+    unitsPurchased: 0,
   });
 
   const handleFormFieldChange = <K extends keyof InventoryForm>(
@@ -68,12 +72,22 @@ export default function InventoryPage() {
       },
     ]);
 
+  const safeArray = <T,>(value: unknown): T[] =>
+    Array.isArray(value) ? value : [];
+
   const load = () => {
-    fetch('/api/medicines')
+    apiCall('/api/medicines')
       .then((r) => r.json())
       .then((d) => {
-        setMedicines(d);
-        setFiltered(d);
+        const list = safeArray<Medicine>(d);
+        setMedicines(list);
+        setFiltered(list);
+      })
+      .catch((error) => {
+        console.error('Failed to load medicines:', error);
+        toast('⚠ Failed to load medicines. Check connection.', 'error');
+        setMedicines([]);
+        setFiltered([]);
       });
   };
 
@@ -83,9 +97,10 @@ export default function InventoryPage() {
 
   useEffect(() => {
     const q = search.toLowerCase();
+    const list = safeArray<Medicine>(medicines);
 
     setFiltered(
-      medicines.filter(
+      list.filter(
         (m) =>
           m.name.toLowerCase().includes(q) ||
           m.category.toLowerCase().includes(q)
@@ -100,6 +115,8 @@ export default function InventoryPage() {
       price: 0,
       stock: 0,
       gstRate: 5,
+      purchasePrice: 0,
+      unitsPurchased: 0,
     });
 
     setEditId(null);
@@ -113,6 +130,8 @@ export default function InventoryPage() {
       price: m.price,
       stock: m.stock,
       gstRate: m.gstRate,
+      purchasePrice: m.purchasePrice || 0,
+      unitsPurchased: m.unitsPurchased || 0,
     });
 
     setEditId(m.id);
@@ -139,7 +158,7 @@ export default function InventoryPage() {
 
       const method = editId ? 'PUT' : 'POST';
 
-      const res = await fetch(url, {
+      const res = await apiCall(url, {
         method,
         headers: {
           'Content-Type': 'application/json',
@@ -152,13 +171,14 @@ export default function InventoryPage() {
       toast(
         editId
           ? '✔ Medicine updated'
-          : '✔ Medicine added'
+          : '✔ Medicine saved'
       );
 
       load();
       closeForm();
-    } catch {
-      toast('✖ Save failed', 'error');
+    } catch (error) {
+      console.error('Save error:', error);
+      toast('✖ Save failed. Check connection and try again.', 'error');
     } finally {
       setSaving(false);
     }
@@ -174,14 +194,15 @@ export default function InventoryPage() {
     }
 
     try {
-      await fetch(`/api/medicines/${id}`, {
+      await apiCall(`/api/medicines/${id}`, {
         method: 'DELETE',
       });
 
       toast('✔ Deleted');
       load();
-    } catch {
-      toast('✖ Delete failed', 'error');
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast('✖ Delete failed. Check connection and try again.', 'error');
     }
   };
 
@@ -261,6 +282,8 @@ export default function InventoryPage() {
                 'MRP (₹)',
                 'Stock',
                 'GST %',
+                'Purchase Price',
+                'Units Purchased',
                 'Status',
                 'Actions',
               ].map((h) => (
@@ -337,6 +360,28 @@ export default function InventoryPage() {
                   }}
                 >
                   {m.gstRate}%
+                </td>
+
+                <td
+                  style={{
+                    padding: '11px 16px',
+                    fontFamily: 'var(--mono)',
+                    fontSize: 13,
+                    color: 'var(--muted)',
+                  }}
+                >
+                  {m.purchasePrice ? `₹${m.purchasePrice.toFixed(2)}` : '-'}
+                </td>
+
+                <td
+                  style={{
+                    padding: '11px 16px',
+                    fontFamily: 'var(--mono)',
+                    fontSize: 13,
+                    color: 'var(--muted)',
+                  }}
+                >
+                  {m.unitsPurchased || '-'}
                 </td>
 
                 <td style={{ padding: '11px 16px' }}>
@@ -535,6 +580,43 @@ export default function InventoryPage() {
                   ))}
                 </select>
               </Field>
+
+              <Field label="Purchase Price (₹)">
+                <input
+                  className="input"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  placeholder="0.00"
+                  value={form.purchasePrice}
+                  onChange={(e) =>
+                    setForm((p) => ({
+                      ...p,
+                      purchasePrice: Number(
+                        e.target.value
+                      ),
+                    }))
+                  }
+                />
+              </Field>
+
+              <Field label="Units Purchased">
+                <input
+                  className="input"
+                  type="number"
+                  min={0}
+                  placeholder="0"
+                  value={form.unitsPurchased}
+                  onChange={(e) =>
+                    setForm((p) => ({
+                      ...p,
+                      unitsPurchased: Number(
+                        e.target.value
+                      ),
+                    }))
+                  }
+                />
+              </Field>
             </div>
 
             <div
@@ -559,12 +641,13 @@ export default function InventoryPage() {
                 className="btn btn-primary"
                 onClick={save}
                 disabled={saving}
+                title={editId ? 'Update medicine details' : 'Add new medicine'}
               >
                 {saving
-                  ? 'Saving...'
+                  ? '⏳ Saving...'
                   : editId
-                  ? 'Update Medicine'
-                  : 'Add Medicine'}
+                  ? '💾 Update'
+                  : '💾 Save'}
               </button>
             </div>
           </div>

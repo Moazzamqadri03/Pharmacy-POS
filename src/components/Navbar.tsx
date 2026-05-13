@@ -14,6 +14,7 @@ const NAV = [
 export default function Navbar() {
   const path = usePathname();
   const [time, setTime] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     const tick = () => {
@@ -29,35 +30,44 @@ export default function Navbar() {
     return () => clearInterval(t);
   }, []);
 
+  const closeMenu = () => setMenuOpen(false);
+  const toggleMenu = () => setMenuOpen((prev) => !prev);
+
   return (
     <header style={{
       position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-      height: '64px',
-      background: 'linear-gradient(135deg,#0b1525 0%,#0e1f38 100%)',
+      minHeight: '64px',
+      background: 'linear-gradient(135deg,#0f172a 0%,#1e293b 100%)',
       borderBottom: '1px solid var(--border)',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      padding: '0 24px',
+      flexWrap: 'wrap',
+      gap: 12,
+      padding: '12px 24px',
       boxShadow: '0 4px 30px rgba(0,0,0,0.4)',
     }}>
       {/* Brand */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0, minWidth: 0, maxWidth: 360, flex: '1 1 240px' }}>
         <div style={{
-          width: 40, height: 40, borderRadius: 10,
+          width: 44, height: 44, borderRadius: 12, flexShrink: 0,
           background: 'linear-gradient(135deg,var(--accent),var(--accent2))',
-          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
         }}>💊</div>
-        <div>
-          <div style={{ fontFamily: 'var(--serif)', fontSize: 16, fontWeight: 700, color: 'var(--text)', lineHeight: 1.1 }}>
+        <div style={{ minWidth: 0, overflow: 'hidden' }}>
+          <div style={{ fontFamily: 'var(--serif)', fontSize: 17, fontWeight: 700, color: 'var(--text)', lineHeight: 1.2, whiteSpace: 'normal', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             Peerzada Medicate Duroo
           </div>
-          <div style={{ fontSize: 10, color: 'var(--accent)', fontFamily: 'var(--mono)', letterSpacing: '0.05em' }}>
+          <div style={{ fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--mono)', letterSpacing: '0.05em', whiteSpace: 'normal', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 3 }}>
             Sopore, District Baramulla, Kashmir
           </div>
         </div>
       </div>
 
+      <button type="button" className="nav-toggle" onClick={toggleMenu} aria-expanded={menuOpen} aria-label={menuOpen ? 'Close menu' : 'Open menu'}>
+        {menuOpen ? '✕' : '☰'}
+      </button>
+
       {/* Nav Links */}
-      <nav style={{ display: 'flex', gap: 4 }}>
+      <nav className={`nav-links ${menuOpen ? 'open' : ''}`}>
         {NAV.map(({ href, label }) => {
           const active = path === href;
           return (
@@ -70,7 +80,9 @@ export default function Navbar() {
               color: active ? '#000' : 'var(--subtle)',
               background: active ? 'var(--accent)' : 'transparent',
               transition: 'all 0.15s',
+              whiteSpace: 'nowrap',
             }}
+            onClick={closeMenu}
             onMouseEnter={e => { if (!active) (e.target as HTMLElement).style.color = 'var(--text)'; }}
             onMouseLeave={e => { if (!active) (e.target as HTMLElement).style.color = 'var(--subtle)'; }}>
               {label}

@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 520" role="img" aria-labelledby="title2">
+  <title id="title2">Sales and performance illustration</title>
+  <defs>
+    <linearGradient id="gradA" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#22c55e" />
+    </linearGradient>
+    <linearGradient id="gradB" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f97316" />
+      <stop offset="100%" stop-color="#ef4444" />
+    </linearGradient>
+  </defs>
+  <rect x="20" y="20" width="600" height="480" rx="56" fill="#0f172a" />
+  <path d="M120 380h280v-40H120z" fill="#111827" opacity="0.95" />
+  <rect x="140" y="330" width="60" height="140" rx="24" fill="url(#gradA)" />
+  <rect x="230" y="290" width="60" height="180" rx="24" fill="url(#gradB)" />
+  <rect x="320" y="250" width="60" height="220" rx="24" fill="#38bdf8" />
+  <rect x="420" y="100" width="120" height="260" rx="30" fill="url(#gradA)" opacity="0.92" />
+  <path d="M136 120h192v180H136z" fill="#111827" opacity="0.9" />
+  <path d="M160 156h144" stroke="#fff" stroke-width="16" stroke-linecap="round" opacity="0.9" />
+  <path d="M160 212h96" stroke="#fff" stroke-width="16" stroke-linecap="round" opacity="0.8" />
+  <path d="M160 270h144" stroke="#fff" stroke-width="16" stroke-linecap="round" opacity="0.8" />
+  <circle cx="492" cy="360" r="62" fill="#e2e8f0" opacity="0.9" />
+  <path d="M476 348h32v32h-32z" fill="#0f172a" />
+  <path d="M508 348h32v32h-32z" fill="#0f172a" />
+</svg>

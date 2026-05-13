@@ -36,6 +36,6 @@ export async function GET() {
       lowStockCount: 0,
       recentSales: [],
       error: 'Failed to load dashboard',
-    }, { status: 500 });
+    }, { status: 200 });
   }
 }

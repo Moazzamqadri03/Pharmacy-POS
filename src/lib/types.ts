@@ -6,6 +6,8 @@ export interface Medicine {
   price: number;
   stock: number;
   gstRate: number;
+  purchasePrice?: number; // Cost price per unit
+  unitsPurchased?: number; // Total units purchased
   createdAt?: string;
   updatedAt?: string;
 }

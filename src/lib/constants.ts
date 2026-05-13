@@ -8,3 +8,29 @@ export const STORE = {
 };
 
 export const GST_RATES = [0, 5, 12, 18];
+
+// API base URL - handles localhost and production
+export const getApiBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    const protocol = window.location.protocol;
+    const host = window.location.host;
+    return `${protocol}//${host}`;
+  }
+  return '';
+};
+
+// API fetch helper with proper URL handling
+export const apiCall = async (endpoint: string, options?: RequestInit) => {
+  const baseUrl = getApiBaseUrl();
+  const url = `${baseUrl}${endpoint}`;
+  try {
+    const response = await fetch(url, options);
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status} ${response.statusText}`);
+    }
+    return response;
+  } catch (error) {
+    console.error(`Failed to fetch ${url}:`, error);
+    throw error;
+  }
+};

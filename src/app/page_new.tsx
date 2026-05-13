@@ -3,7 +3,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { apiCall } from '@/lib/constants';
 
 type SaleRow = {
   id: string;
@@ -63,18 +62,11 @@ export default function HomePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await apiCall('/api/dashboard');
+        const response = await fetch('/api/dashboard');
         const data = await response.json();
         setMetrics(data);
       } catch (error) {
         console.error('Dashboard fetch failed', error);
-        setMetrics({
-          totalSalesToday: 0,
-          totalRevenueToday: 0,
-          totalMedicines: 0,
-          lowStockCount: 0,
-          recentSales: [],
-        });
       } finally {
         setLoading(false);
       }
@@ -219,52 +211,6 @@ export default function HomePage() {
           ) : (
             <div className="empty-state">No recent sales recorded yet.</div>
           )}
-        </div>
-      </section>
-      <section className="quick-access-section">
-        <div className="container">
-          <div className="section-header">
-            <h2>Quick Access</h2>
-            <p>Jump straight into your pharmacy operations</p>
-          </div>
-
-          <div className="quick-access-grid">
-            <Link href="/pos" className="quick-access-card card card-pos">
-              <div className="card-visual">
-                <div className="card-icon">🛒</div>
-                <div className="card-icon-small">💳</div>
-              </div>
-              <div className="card-content">
-                <h3>Point of Sale</h3>
-                <p>Create new sales and generate receipts instantly with our fast POS system</p>
-              </div>
-              <div className="card-arrow">→</div>
-            </Link>
-
-            <Link href="/inventory" className="quick-access-card card card-inventory">
-              <div className="card-visual">
-                <div className="card-icon">💊</div>
-                <div className="card-icon-small">📦</div>
-              </div>
-              <div className="card-content">
-                <h3>Inventory Management</h3>
-                <p>Add medicines, track stock, and manage inventory with precision</p>
-              </div>
-              <div className="card-arrow">→</div>
-            </Link>
-
-            <Link href="/sales" className="quick-access-card card card-sales">
-              <div className="card-visual">
-                <div className="card-icon">📋</div>
-                <div className="card-icon-small">📊</div>
-              </div>
-              <div className="card-content">
-                <h3>Sales History</h3>
-                <p>Review past transactions, generate reports, and track performance</p>
-              </div>
-              <div className="card-arrow">→</div>
-            </Link>
-          </div>
         </div>
       </section>
     </div>
